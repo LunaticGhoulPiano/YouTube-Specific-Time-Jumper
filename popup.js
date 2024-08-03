@@ -182,14 +182,3 @@ function jumpToTime(time) {
         }   
     }
 }
-
-// Ads need parts-----------------------------
-
-// get current playing time
-function getCurrentTime() {
-    const timeElement = document.querySelector("#movie_player > div.ytp-chrome-bottom > div.ytp-chrome-controls > div.ytp-left-controls > div.ytp-time-display.notranslate > span:nth-child(2) > span.ytp-time-current");
-    if (timeElement) {
-        return timeElement.textContent.trim();
-    }
-    return "Unavailable";
-}

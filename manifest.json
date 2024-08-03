@@ -3,22 +3,23 @@
     "name": "YouTube Specific Time Jumper",
     "version": "1.0.0",
     "description": "Jump to specific time in the video",
-    
     "permissions": ["activeTab", "scripting"],
+    "icons": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
     "action": {
       "default_popup": "popup.html",
       "default_icon": {
-        "16": "web_16.png",
-        "48": "web_48.png",
-        "128": "web_128.png"
+        "16": "icons/icon16.png",
+        "32": "icons/icon32.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
       }
     },
     "background": {
       "service_worker": "background.js"
-    },
-    "icons": {
-      "16": "web_16.png",
-      "48": "web_48.png",
-      "128": "web_128.png"
     }
 }
