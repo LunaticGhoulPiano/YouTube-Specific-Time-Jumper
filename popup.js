@@ -32,7 +32,8 @@ function loadVideoDetails() {
             if (results && results[0]) {
                 totalDurationInSec = results[0].result.totalDurationInSec;
                 const formattedTime = results[0].result.formattedTime;
-                document.getElementById("jumpTime").placeholder = `Enter time (total duration: ${formattedTime})`; // display on input field
+                document.getElementById("totalDuration").textContent = `Total duration: ${formattedTime}`;
+                document.getElementById("jumpTime").placeholder = `Enter time`; // display on input field
                 chrome.runtime.sendMessage({action: "totalDuration", duration: formattedTime});
             }
         });
@@ -44,8 +45,7 @@ function loadVideoDetails() {
         }, (results) => {
             if (results && results[0]) {
                 const currentDuration = results[0].result;
-                document.getElementById("currentDuration").textContent = "Current playing video duration: " + currentDuration;
-                chrome.runtime.sendMessage({action: "currentDuration", duration: currentDuration});
+                document.getElementById("currentDuration").textContent = `Current video duration: ${currentDuration}`;
             }
         });
 
@@ -57,30 +57,38 @@ function loadVideoDetails() {
             if (results && results[0]) {
                 trueDurationInSec = results[0].result.trueDuraionInSec;
                 const formattedTime = results[0].result.formattedTime;
-                document.getElementById("trueDuration").textContent = "True duration: " + formattedTime;
-                chrome.runtime.sendMessage({action: "trueDuration", duration: formattedTime});
+                document.getElementById("trueDuration").textContent = `True video duration: ${formattedTime}`;
             }
         });
 
         /*
+        // set numberKeyMap
         if (totalDurationInSec == -1 || trueDurationInSec == -1) document.getElementById("adStatus").placeholder = "No video found";
         else {
             let offset = Math.abs(totalDurationInSec - trueDurationInSec);
+            
+            // judge ad
             if (offset == 0 || offset == 1) {
                 document.getElementById("adStatus").placeholder = "Video doesn't have ads";
             }
             else {
                 document.getElementById("adStatus").placeholder = "Video has ads";
             }
+            
+            // set numberKeyMap
+
         }
         */
+        
     });
 }
 
 // Get the duration of ads+video in hh:mm:ss format
 function getTotalDuration() {
     const video = document.querySelector("video");
-    if (video) {
+    if (video && video.duration) {
+        chrome.runtime.sendMessage({action: "preciseTotalDuration", duration: video.duration});
+
         const totalSeconds = Math.floor(video.duration);
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -105,8 +113,10 @@ function getCurrentDuration() {
         let timeParts = durationElement.textContent.split(":").map(Number);
         if (timeParts.length === 2) timeParts.unshift(0); // if the video length is in the format of mm:ss, prepend a 0 for hours
         let formattedTimeParts = timeParts.map(part => part.toString().padStart(2, "0")); // format each part to ensure two digits
+        if (Number(formattedTimeParts) == 0) return "Unavailable"; // YouTube page but not video
         return formattedTimeParts.join(":");
     }
+    // else main page, shorts ...
     return "Unavailable";
 }
 
@@ -128,7 +138,7 @@ function getTrueDuration() {
             if (parts[2]) minutes = Number(parts[2]);
             if (parts[3]) seconds = Number(parts[3]);
 
-            // set number key 0 ~ 9's speccific time
+            // summarize seconds
             durationInSec = hours * 3600 + minutes * 60 + seconds;
 
             // transform to hh:mm:ss format
