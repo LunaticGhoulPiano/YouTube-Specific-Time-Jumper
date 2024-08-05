@@ -2,6 +2,9 @@
 Jump to specific time, skip server-inserted ads.
 Also this is my first side project, and first time learning front-end developing (hence the code looks ugly).
 
+## How to use:
+Click "Code" - "Download ZIP", unzip, go to "chrome://extensions/" or "brave://extensions/" (personally I'm using Brave browser), enable developer mode, go "Load unpacked" and choose the path where you unzip. Then brows a YouTube video, click the extension icon, enter the specific time, press"enter" key.
+
 ## Current support functions:
 - Jump to specific time of normal youtube video and ended-livestream (also can jump while playing ads, draging the progress bar and hotkey are disabled).
 - The extension will be activated when user click the icon.
