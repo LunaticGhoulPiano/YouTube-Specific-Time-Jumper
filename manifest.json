@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "YouTube Specific Time Jumper",
-    "version": "1.0.0",
+    "version": "1.0",
     "description": "Jump to specific time in the video",
     "permissions": ["activeTab", "scripting"],
     "icons": {

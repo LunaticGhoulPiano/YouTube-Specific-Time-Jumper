@@ -1,11 +1,12 @@
-const numberKeyMap = new Map();
+const numberKeyMap = new Map(); // TODO
 
 // Initialize event listeners when the DOM content is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
     const jumpTimeInput = document.getElementById("jumpTime");
 
     // load video duration and current duration from the active tab
-    loadVideoDetails();
+    loadVideoDetails(); // TODO: judge youtube type document.querySelector("body > ytd-app")
+    //testLoad();
 
     // add keydown event to the jump time input field
     jumpTimeInput.addEventListener("keydown", (event) => {
@@ -18,10 +19,67 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+/*
+// Load total and current duration from the active tab
+function testLoad() {
+    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        // get current youtube webpage
+        const activeTab = tabs[0];
+        
+        // Function to extract all required information
+        function extractVideoDetails() {
+            const results = {};
+            
+            // Get total duration
+            results.preciseTotalDuration = getTotalDuration().preciseTotalDuration;
+            results.totalDurationInSec = getTotalDuration().totalDurationInSec;
+            results.formattedTime = getTotalDuration().formattedTime;
+
+            // Get current duration
+            results.currentDuration = getCurrentDuration();
+
+            // Get true duration
+            results.trueDurationInSec = getTrueDuration().trueDuraionInSec;
+            results.trueFormattedTime = getTrueDuration().formattedTime;
+            
+            return results;
+        }
+
+        chrome.scripting.executeScript({
+            target: {tabId: activeTab.id},
+            func: extractVideoDetails,
+        }, (results) => {
+            if (results && results[0]) {
+                const { preciseTotalDuration, totalDurationInSec, formattedTime, currentDuration, trueDurationInSec, trueFormattedTime } = results[0].result;
+
+                if (formattedTime) {
+                    document.getElementById("totalDuration").textContent = `Total duration: ${formattedTime}`;
+                    document.getElementById("jumpTime").placeholder = `Enter time`; // display on input field
+                    chrome.runtime.sendMessage({action: "totalDuration", duration: formattedTime});
+                }
+
+                if (currentDuration) {
+                    document.getElementById("currentDuration").textContent = `Current video duration: ${currentDuration}`;
+                }
+
+                if (trueDurationInSec === -1) {
+                    document.getElementById("totalDuration").textContent = "Total duration: Unavailable";
+                    document.getElementById("currentDuration").textContent = "Current video duration: Unavailable";
+                } else {
+                    document.getElementById("trueDuration").textContent = `True video duration: ${trueFormattedTime}`;
+                }
+
+                // TODO: deal with picture-in-picture (PIP)
+            }
+        });
+    });
+}
+*/
+
 // Load total and current duration from the active tab
 function loadVideoDetails() {
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-        // get current youtube webpage
+        // get current webpage
         const activeTab = tabs[0];
         let preciseTotalDuration, totalDurationInSec, trueDurationInSec;
         
@@ -69,11 +127,12 @@ function loadVideoDetails() {
             }
         });
 
-        // TODO: execute script setAdsRelatedInfo()
         /*
+        // TODO: execute script setAdsRelatedInfo()
         chrome.scripting.executeScript({
             target: {tabId: activeTab.id},
             func: setAdsRelatedInfo,
+            args: [totalDurationInSec, trueDurationInSec]
         });
         */
         
@@ -173,41 +232,19 @@ function getTrueDuration() {
 
 // Judge if ads inserted
 function setAdsRelatedInfo(totalDurationInSec, trueDurationInSec) {
+    chrome.runtime.sendMessage({action: "debug", debug: `totalDurationInSec: ${totalDurationInSec}, trueDurationInSec: ${trueDurationInSec}`});
     if (totalDurationInSec == -1 || trueDurationInSec == -1) document.getElementById("adStatus").placeholder = "No video found";
     else {
         // judge if ads exist
-        /* ex. No ads, get preciseTotalDuration = 623.501s (https://youtu.be/pSD91e6gyZI?si=v6HJ0BEfBbMSQJeW):
-            getTrueDuration() finds out that youtube rounds trueDurationInSec to 624s (PT624S),
-            but the video's true duration (displayed on progress bar) is 10m23s, i.e. 623s,
-            so we find out that youtube use floor instead of round,
-            hence I designed getTotalDuration() totalDurationInSec = floor(preciseTotalDuration) = 623s,
-            => use 623s (10m23s) instead of 634s (10m24s)
-
-           ex. No ads, get preciseTotalDuration = 11903.021s (https://www.youtube.com/live/atsFSksE7hs?si=Yve7mQGSPHOYY6iz):
-            youtube rounds trueDurationInSec to 11904s (PT11904S),
-            but display 3hr18m23s (11903s) on the progress bar,
-            => use 11903s (3hr18m23s) instead of 11904s (3hr18m24s)
-
-           ex. With n ads, get preciseTotalDuration = 221.582s (https://youtu.be/UKVioegPPds?si=XuEKzqllSOfn41qi):
-            youtube rounds trueDurationInSec to 207s (PT207S),
-            and display 3m26s (206s) on the progress bar.
-            We can't directly get it cuz youtube sequentially inserts ads (AD1, AD2, ..., ADn, main video),
-            so the duration of main video (206s) will only available when all ads are inserted;
-            also, as we know youtube rounds up trueDurationInSec,
-            so :
-            1. getTrueDuration() operate "PT(timeInSec)S - 1" to get the true duration of main video (trueDurationInSec): 206s
-            2. use totalDurationInSec - trueDurationInSec to get the duration of all ads: 221 - 206 = 15s
-            => we can know that the main video starts at 15s, ends at 221s */
         let beginTime = totalDurationInSec - trueDurationInSec;
         if (beginTime == 0) document.getElementById("adStatus").placeholder = "Video doesn't have ads";
         else document.getElementById("adStatus").placeholder = "Video has ads";
+        document.getElementById("trueStartTime").placeholder = `Start time: ${beginTime}`;
 
         // TODO: set numberKeyMap
-        numberKeyMap.set("0", beginTime);
+        //numberKeyMap.set("0", beginTime);
     }
 }
-
-// judge youtube type document.querySelector("body > ytd-app")
 
 // JUMP -------------------------------------------------------------
 
@@ -224,7 +261,7 @@ function performJump() {
     });
 }
 
-// Perform the jump action by pressed number key
+// TODO: Perform the jump action by pressed number key
 function performJumpByNumberKey(jumpTime) {
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
         const activeTab = tabs[0];
